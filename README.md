@@ -11,7 +11,7 @@ This repo holds the Yardel agent skill. It teaches your agent to publish, share,
 /plugin install yardel@yardel
 ```
 
-Then install the CLI it uses: `npm i -g yardel` (your agent can do this for you). Or skip the plugin and run `npm i -g yardel && yard skill install`.
+Then install the CLI it uses: `npm i -g @yardel/cli` (your agent can do this for you). Or skip the plugin and run `npm i -g @yardel/cli && yard skill install`.
 
 To use the connector instead of the CLI:
 
@@ -31,7 +31,7 @@ Settings → Apps & Connectors → Advanced settings → turn on Developer mode.
 ## Codex, Cursor and other agents
 
 ```
-npm i -g yardel
+npm i -g @yardel/cli
 yard skill install --agent codex     # or cursor, or all
 ```
 
