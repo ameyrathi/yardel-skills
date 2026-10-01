@@ -11,7 +11,7 @@ Yardel turns what you build into a private web page that only the people the use
 
 Yardel is reachable two ways. Use whichever this session has:
 
-- **The Yardel connector** (Claude.ai, ChatGPT, or any MCP client connected to `https://app.yardel.dev/mcp`): tools `publish_page`, `share_page`, `unshare_page`, `list_pages`, `who_has_access`, `list_versions`, `rollback_page` and `access_requests`. `publish_page` takes the whole page as `content` with `format: "html"` or `"markdown"`, so put everything in one self-contained document (inline CSS and JS). The rules below (confirm emails before sharing, roles, expiry, reporting back) apply the same way; each tool answers with a sentence plus JSON, and errors carry a fix.
+- **The Yardel connector** (Claude.ai, ChatGPT, or any MCP client connected to `https://app.yardel.dev/mcp`): tools `publish_page`, `share_page`, `unshare_page`, `set_link_access`, `list_pages`, `who_has_access`, `list_versions`, `rollback_page` and `access_requests`. `publish_page` takes the whole page as `content` with `format: "html"` or `"markdown"`, so put everything in one self-contained document (inline CSS and JS). The rules below (confirm emails before sharing, roles, expiry, reporting back) apply the same way; each tool answers with a sentence plus JSON, and errors carry a fix.
 - **The `yard` CLI**, when you can run shell commands (Claude Code, Codex, Cursor). It also publishes folders and built projects, which the connector can't. The rest of this file shows CLI commands; the connector tools take the same arguments.
 
 If neither is available, tell the user they can add the connector (Settings → Connectors → add custom connector → `https://app.yardel.dev/mcp`) or install the CLI with `npm i -g @yardel/cli`.
@@ -43,19 +43,35 @@ yard deploy . --json                                    # a Vite/Astro/SvelteKit
 Sharing sends email, so confirm the exact addresses with the user before running it, unless they already gave them to you in this conversation.
 
 ```sh
-yard share q3-report maya@acme.com dan@acme.com --json                # can view, for 30 days
+yard share q3-report maya@pancake.studio dan@pancake.studio --json                # can view, for 30 days
 yard share q3-report alex@northwind.io --role commenter --json        # can view and comment
-yard share q3-report @acme.com --yes --json                           # everyone with a confirmed acme.com email
-yard share q3-report ben@acme.com --role editor --json                # a collaborator (see below)
-yard share q3-report maya@acme.com --expires 7d -m "Read section 2 first" --json
+yard share q3-report @pancake.studio --yes --json                           # everyone with a confirmed pancake.studio email
+yard share q3-report ben@pancake.studio --role editor --json                # a collaborator (see below)
+yard share q3-report maya@pancake.studio --expires 7d -m "Read section 2 first" --json
 ```
 
 - Roles: `viewer` (default), `commenter`, `editor`. Expiry: `7d`, `30d` (default for viewers), `90d`, a date like `2026-12-31`, or `never`.
 - Sharing with a whole domain needs `--yes` (it's a bulk change); public email domains like gmail.com are refused.
 - `yard share` prints each person's personal link. They also get an invite email from the user.
-- Remove access: `yard unshare q3-report maya@acme.com --json` (takes effect within a minute). `yard unshare q3-report --all --yes --json` removes every viewer and commenter at once, but not collaborators.
+- Remove access: `yard unshare q3-report maya@pancake.studio --json` (takes effect within a minute). `yard unshare q3-report --all --yes --json` removes every viewer and commenter at once, but not collaborators.
 - `yard audience list <app> --json` shows who has access and whether their invite was sent. `yard audience pin <app> <group> v2 --json` keeps a group on one version while new versions ship.
 - `yard requests --json` lists people who asked for access; approve with `yard requests --approve <id> --json` or decline with `--decline <id>`. Ask the user before approving.
+
+## Anyone with the link
+
+Instead of naming people, a page can open for anyone who has its secret link. The plain page address stays private either way.
+
+```sh
+yard link q3-report signed-in --json      # they confirm their email first; the owner sees who opened it
+yard link q3-report public --yes --json   # no sign-in at all
+yard link q3-report off --json            # back to named people only
+yard link q3-report --json                # current mode and the link
+```
+
+- The JSON has the `url` to send. Give the user that URL, not the plain page address.
+- Use `public` only when the user clearly wants it and the content is fine for anyone to see: ask first. Public pages show a "Public page · Report" link in the Yardel badge, and search engines are asked not to index them.
+- Only the workspace owner can change link access. Public needs a workspace older than a day (`E_FORBIDDEN` before that); offer `signed-in` meanwhile.
+- Turning it off works at once. `yard unshare <app> --all --yes` also turns it off.
 
 ## Collaborators
 
@@ -64,12 +80,12 @@ A collaborator is someone who can change the page, not just open it: they can pu
 **Adding one** (workspace owners only):
 
 ```sh
-yard share q3-report ben@acme.com --role editor --json
+yard share q3-report ben@pancake.studio --role editor --json
 ```
 
 - Ben gets a "you've been added as a collaborator" email. His access has no end date; it lasts until the owner removes him.
 - Collaborators are added one person at a time, never by domain.
-- Remove a collaborator with `yard unshare q3-report ben@acme.com --json`. They lose access to that app, and to the workspace if it was their last one there.
+- Remove a collaborator with `yard unshare q3-report ben@pancake.studio --json`. They lose access to that app, and to the workspace if it was their last one there.
 
 **If you are working as a collaborator** (the user was added to someone else's app):
 
