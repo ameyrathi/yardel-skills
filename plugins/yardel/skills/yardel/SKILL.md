@@ -14,11 +14,11 @@ Yardel is reachable two ways. Use whichever this session has:
 - **The Yardel connector** (Claude.ai, ChatGPT, or any MCP client connected to `https://app.yardel.dev/mcp`): tools `publish_page`, `share_page`, `unshare_page`, `list_pages`, `who_has_access`, `list_versions`, `rollback_page` and `access_requests`. `publish_page` takes the whole page as `content` with `format: "html"` or `"markdown"`, so put everything in one self-contained document (inline CSS and JS). The rules below (confirm emails before sharing, roles, expiry, reporting back) apply the same way; each tool answers with a sentence plus JSON, and errors carry a fix.
 - **The `yard` CLI**, when you can run shell commands (Claude Code, Codex, Cursor). It also publishes folders and built projects, which the connector can't. The rest of this file shows CLI commands; the connector tools take the same arguments.
 
-If neither is available, tell the user they can add the connector (Settings → Connectors → add custom connector → `https://app.yardel.dev/mcp`) or install the CLI with `npm i -g yardel`.
+If neither is available, tell the user they can add the connector (Settings → Connectors → add custom connector → `https://app.yardel.dev/mcp`) or install the CLI with `npm i -g @yardel/cli`.
 
 ## Before you start (CLI)
 
-- If `yard` isn't installed, install it with `npm i -g yardel` (or run any command as `npx yardel <command>`).
+- If `yard` isn't installed, install it with `npm i -g @yardel/cli` (or run any command as `npx -p @yardel/cli yard <command>`).
 - Check the CLI is signed in: `yard whoami --json`. If it fails with `E_AUTH_REQUIRED`, run `yard login --json`. The first line it prints has `verification_uri_complete` and `user_code`: give the user that link and code to approve in their browser, then wait for the command to finish.
 - `whoami` also says whether the user is the **owner** of the workspace or a **collaborator** on some of its apps. Collaborators can only work on the apps they were added to.
 
