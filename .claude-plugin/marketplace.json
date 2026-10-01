@@ -1,0 +1,14 @@
+{
+  "name": "yardel",
+  "owner": { "name": "Yardel", "email": "hello@yardel.dev" },
+  "metadata": { "description": "Publish what your agent makes as private pages and share them with named people." },
+  "plugins": [
+    {
+      "name": "yardel",
+      "source": "./plugins/yardel",
+      "description": "Publish HTML, Markdown, decks and dashboards as private Yardel pages; share them with colleagues and collaborators.",
+      "homepage": "https://yardel.dev",
+      "category": "productivity"
+    }
+  ]
+}
