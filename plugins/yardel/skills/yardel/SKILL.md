@@ -11,7 +11,7 @@ Yardel turns what you build into a private web page that only the people the use
 
 Yardel is reachable two ways. Use whichever this session has:
 
-- **The Yardel connector** (Claude.ai, ChatGPT, or any MCP client connected to `https://app.yardel.dev/mcp`): tools `publish_page`, `share_page`, `unshare_page`, `set_link_access`, `list_comments`, `reply_to_comment`, `resolve_comment`, `page_activity`, `list_pages`, `who_has_access`, `list_versions`, `rollback_page` and `access_requests`. `publish_page` takes the whole page as `content` with `format: "html"` or `"markdown"`, so put everything in one self-contained document (inline CSS and JS). The rules below (confirm emails before sharing, roles, expiry, reporting back) apply the same way; each tool answers with a sentence plus JSON, and errors carry a fix.
+- **The Yardel connector** (Claude.ai, ChatGPT, or any MCP client connected to `https://app.yardel.dev/mcp`): tools `publish_page`, `share_page`, `unshare_page`, `set_link_access`, `set_ip_allow_list`, `list_comments`, `reply_to_comment`, `resolve_comment`, `page_activity`, `list_pages`, `who_has_access`, `list_versions`, `rollback_page` and `access_requests`. `publish_page` takes the whole page as `content` with `format: "html"` or `"markdown"`, so put everything in one self-contained document (inline CSS and JS). The rules below (confirm emails before sharing, roles, expiry, reporting back) apply the same way; each tool answers with a sentence plus JSON, and errors carry a fix.
 - **The `yard` CLI**, when you can run shell commands (Claude Code, Codex, Cursor). It also publishes folders and built projects, which the connector can't. The rest of this file shows CLI commands; the connector tools take the same arguments.
 
 If neither is available, tell the user they can add the connector (Settings → Connectors → add custom connector → `https://app.yardel.dev/mcp`) or install the CLI with `npm i -g @yardel/cli`.
@@ -72,6 +72,22 @@ yard link q3-report --json                # current mode and the link
 - Use `public` only when the user clearly wants it and the content is fine for anyone to see: ask first. Public pages show "Public page · Report" in the Powered by Yardel badge, and search engines are asked not to index them.
 - Only the workspace owner can change link access. Public needs a workspace older than a day (`E_FORBIDDEN` before that); offer `signed-in` meanwhile.
 - Turning it off works at once. `yard unshare <app> --all --yes` also turns it off.
+
+## Restrict to your network
+
+To make pages open only from the office or VPN, allow their public IP addresses or ranges (CIDR, IPv4 or IPv6):
+
+```sh
+yard ip-allow q3-report --add 203.0.113.0/24 2001:db8::/48 --json   # this page only
+yard ip-allow --workspace --add 203.0.113.0/24 --json               # every page without its own list
+yard ip-allow q3-report --remove 203.0.113.0/24 --json
+yard ip-allow q3-report --clear --json                              # back to the workspace list, or any network
+yard ip-allow q3-report --json                                      # the list that applies, and where it comes from
+```
+
+- Ask the user for the addresses; don't guess. Private ranges (10.x, 192.168.x, 172.16-31.x) are refused because visitors are seen by their public address.
+- It applies to everyone, the owner included. If the JSON has a warning that this machine's address isn't on the list, tell the user. Sign-in and the portal are never restricted, so a wrong list can always be fixed.
+- Owners only. Up to 50 entries per list. Changes apply on the next request.
 
 ## Comments: read, fix, publish, resolve
 
