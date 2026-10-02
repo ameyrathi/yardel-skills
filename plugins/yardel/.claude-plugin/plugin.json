@@ -1,6 +1,6 @@
 {
   "name": "yardel",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Publish HTML, Markdown, decks and dashboards as private Yardel pages; share them with colleagues and collaborators.",
   "author": { "name": "Yardel", "email": "hello@yardel.dev" },
   "homepage": "https://yardel.dev",

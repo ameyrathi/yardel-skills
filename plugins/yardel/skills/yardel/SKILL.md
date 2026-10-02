@@ -11,7 +11,7 @@ Yardel turns what you build into a private web page that only the people the use
 
 Yardel is reachable two ways. Use whichever this session has:
 
-- **The Yardel connector** (Claude.ai, ChatGPT, or any MCP client connected to `https://app.yardel.dev/mcp`): tools `publish_page`, `share_page`, `unshare_page`, `set_link_access`, `list_pages`, `who_has_access`, `list_versions`, `rollback_page` and `access_requests`. `publish_page` takes the whole page as `content` with `format: "html"` or `"markdown"`, so put everything in one self-contained document (inline CSS and JS). The rules below (confirm emails before sharing, roles, expiry, reporting back) apply the same way; each tool answers with a sentence plus JSON, and errors carry a fix.
+- **The Yardel connector** (Claude.ai, ChatGPT, or any MCP client connected to `https://app.yardel.dev/mcp`): tools `publish_page`, `share_page`, `unshare_page`, `set_link_access`, `list_comments`, `reply_to_comment`, `resolve_comment`, `page_activity`, `list_pages`, `who_has_access`, `list_versions`, `rollback_page` and `access_requests`. `publish_page` takes the whole page as `content` with `format: "html"` or `"markdown"`, so put everything in one self-contained document (inline CSS and JS). The rules below (confirm emails before sharing, roles, expiry, reporting back) apply the same way; each tool answers with a sentence plus JSON, and errors carry a fix.
 - **The `yard` CLI**, when you can run shell commands (Claude Code, Codex, Cursor). It also publishes folders and built projects, which the connector can't. The rest of this file shows CLI commands; the connector tools take the same arguments.
 
 If neither is available, tell the user they can add the connector (Settings → Connectors → add custom connector → `https://app.yardel.dev/mcp`) or install the CLI with `npm i -g @yardel/cli`.
@@ -69,9 +69,30 @@ yard link q3-report --json                # current mode and the link
 ```
 
 - The JSON has the `url` to send. Give the user that URL, not the plain page address.
-- Use `public` only when the user clearly wants it and the content is fine for anyone to see: ask first. Public pages show a "Public page · Report" link in the Yardel badge, and search engines are asked not to index them.
+- Use `public` only when the user clearly wants it and the content is fine for anyone to see: ask first. Public pages show "Public page · Report" in the Powered by Yardel badge, and search engines are asked not to index them.
 - Only the workspace owner can change link access. Public needs a workspace older than a day (`E_FORBIDDEN` before that); offer `signed-in` meanwhile.
 - Turning it off works at once. `yard unshare <app> --all --yes` also turns it off.
+
+## Comments: read, fix, publish, resolve
+
+People shared with as `commenter` (and collaborators) can pin comments to any part of a page. Each thread says which element it's about (its text and CSS path), the version it was made on, and the replies.
+
+```sh
+yard comments q3-report --json                        # open threads
+yard comments reply thr_123 "Fixed in v4: the axis now says annual." --json
+yard comments resolve thr_123 --json                  # marks it done in the current version
+yard comments q3-report --all --json                  # include resolved ones
+```
+
+When the user asks you to "address the feedback": list the open comments, change the page, publish a new version, then reply to each thread saying what changed and resolve it. Replies email the commenter, so keep them short and specific. Don't resolve a thread you didn't actually fix; reply with a question instead.
+
+## Who opened it
+
+```sh
+yard activity q3-report --json      # visits, people, minutes, last visit and version per person (30 days)
+```
+
+The owner and collaborators aren't counted. People who opened a public link without signing in show as "link viewer #N".
 
 ## Collaborators
 
