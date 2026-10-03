@@ -1,6 +1,6 @@
 ---
 name: yardel
-description: Publish HTML pages, Markdown reports, slide decks, dashboards and static web apps as private pages with Yardel, and share them with named people, a company domain, or collaborators who can edit. Use when the user asks to publish, deploy, host, share or "send a link to" something you built, or to manage who can open or change a Yardel page.
+description: Publish HTML pages, Markdown reports, slide decks, dashboards, React components and static web apps as private pages with Yardel, and share them with named people, a company domain, or collaborators who can edit. Use when the user asks to publish, deploy, host, share or "send a link to" something you built, or to manage who can open or change a Yardel page.
 ---
 
 # Yardel
@@ -11,7 +11,7 @@ Yardel turns what you build into a private web page that only the people the use
 
 Yardel is reachable two ways. Use whichever this session has:
 
-- **The Yardel connector** (Claude.ai, ChatGPT, or any MCP client connected to `https://app.yardel.dev/mcp`): tools `publish_page`, `share_page`, `unshare_page`, `set_link_access`, `set_ip_allow_list`, `list_comments`, `reply_to_comment`, `resolve_comment`, `page_activity`, `list_pages`, `who_has_access`, `list_versions`, `rollback_page` and `access_requests`. `publish_page` takes the whole page as `content` with `format: "html"` or `"markdown"`, so put everything in one self-contained document (inline CSS and JS). The rules below (confirm emails before sharing, roles, expiry, reporting back) apply the same way; each tool answers with a sentence plus JSON, and errors carry a fix.
+- **The Yardel connector** (Claude.ai, ChatGPT, or any MCP client connected to `https://app.yardel.dev/mcp`): tools `publish_page`, `share_page`, `unshare_page`, `set_link_access`, `set_ip_allow_list`, `list_comments`, `reply_to_comment`, `resolve_comment`, `page_activity`, `list_pages`, `who_has_access`, `list_versions`, `rollback_page` and `access_requests`. `publish_page` takes the whole page as `content` with `format: "html"`, `"markdown"` or `"react"` (one React component file; see "React components" below), so put everything in one self-contained document (inline CSS and JS). The rules below (confirm emails before sharing, roles, expiry, reporting back) apply the same way; each tool answers with a sentence plus JSON, and errors carry a fix.
 - **The `yard` CLI**, when you can run shell commands (Claude Code, Codex, Cursor). It also publishes folders and built projects, which the connector can't. The rest of this file shows CLI commands; the connector tools take the same arguments.
 
 If neither is available, tell the user they can add the connector (Settings → Connectors → add custom connector → `https://app.yardel.dev/mcp`) or install the CLI with `npm i -g @yardel/cli`.
@@ -27,6 +27,7 @@ If neither is available, tell the user they can add the connector (Settings → 
 ```sh
 yard deploy report.html --app q3-report -m "First draft" --json
 yard deploy notes.md --app churn-findings --json      # Markdown becomes a clean, readable page
+yard deploy Dashboard.jsx --app pipeline --json        # a single React component, like a claude.ai artifact
 yard deploy ./dist --app pricing-proto --json          # a folder with index.html
 yard deploy . --json                                    # a Vite/Astro/SvelteKit/CRA/Next-export project (builds first)
 ```
@@ -37,6 +38,14 @@ yard deploy . --json                                    # a Vite/Astro/SvelteKit
 - A deploy is refused if it contains a live secret (`E_SECRET_FOUND`). Never work around this: move the secret out of the client code. Publishable keys only produce a warning.
 - External scripts, styles or APIs outside the default allow-list are reported as `csp` warnings with the `yard.json` line to add.
 - `yard versions <app> --json` lists versions; `yard rollback <app> v3 --json` makes an older version the latest again (nothing is deleted).
+
+### React components
+
+A single `.jsx` or `.tsx` file whose default export is the page's component is compiled into a page (`format: "react"` in the connector). This is the same shape as a claude.ai artifact.
+
+- Tailwind classes work. The file can import `react`, `react-dom`, `recharts`, `lucide-react` (icons by name), shadcn/ui from `@/components/ui/*`, `lodash`, `d3`, `three` (r128), `chart.js`, `plotly`, `mathjs`, `papaparse`, `xlsx`, `date-fns`, `framer-motion`, `tone` and `mammoth`.
+- It can't import other files or other packages (`E_IMPORT_UNSUPPORTED` names the import). For a multi-file app, or other packages, deploy the project folder with its `package.json` instead: `yard deploy .` builds it with its own dependencies.
+- Browser storage works as on any page.
 
 ## Share
 
